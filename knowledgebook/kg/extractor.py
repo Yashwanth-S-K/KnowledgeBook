@@ -98,7 +98,7 @@ _STAGE_A_PARALLELISM = 3  # R5-1: per-file Stage A concurrency cap so a
 # free, no batch barriers. 10 is the safe default (codex proxy comfortably
 # handles ~10-15 rps); bump via env when running against a backend with
 # higher throughput, or lower it on rate-limited deployments.
-_STAGE_B_CONCURRENCY = int(os.getenv("KG_STAGE_B_CONCURRENCY", "10"))
+_STAGE_B_CONCURRENCY = int(os.getenv("KG_STAGE_B_CONCURRENCY", "3"))
 _TOPIC_NAME_MAX = 80     # F9: cap topic name to bound prompt-injection
 _TOPIC_DEF_MAX = 300     # F9: cap topic definition for the same reason
 _TOPIC_BAD_CHARS = ("\n", "\r", "\t", "`")  # F9: strip control / fence chars

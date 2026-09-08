@@ -299,7 +299,12 @@ class ModelRouter:
                 last_error = e
                 logger.warning(f"[{backend_obj.name}] attempt {attempt + 1} failed: {e}")
                 if attempt < max_retries - 1:
-                    await asyncio.sleep(2 ** attempt)
+                    err_str = str(e)
+                    if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "rate" in err_str.lower():
+                        sleep_sec = 3.0 * (attempt + 1)
+                    else:
+                        sleep_sec = 2 ** attempt
+                    await asyncio.sleep(sleep_sec)
                     if allow_fallback and attempt == max_retries - 2:
                         fallback = self._get_fallback(backend_obj.name)
                         if fallback:

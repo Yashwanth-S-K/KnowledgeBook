@@ -234,12 +234,12 @@ function CoursePickerModal({ courses, defaultId, defaultEngine, onPick, onCancel
           >✕</button>
         </div>
 
-        {/* Step 1: course selection. Existing chips + a "+ 新建课程" chip in
+        {/* Step 1: course selection. Existing chips + a "+ New Course" chip in
             the same row. Selecting the new-course chip reveals an inline
             input below it. Clicking ANY chip is a pure selection — it does
             NOT trigger the file picker. */}
         <div className="course-picker-section">
-          <div className="course-picker-label">{t("upload.target_course") || "选择课程"}</div>
+          <div className="course-picker-label">{t("upload.target_course") || "Select Course"}</div>
           <div className="course-picker-existing">
             {courses.map(c => {
               const cid = typeof c?.id === "string" ? c.id : "";
@@ -269,7 +269,7 @@ function CoursePickerModal({ courses, defaultId, defaultEngine, onPick, onCancel
               className={"course-picker-chip course-picker-chip-new" + (isCreating ? " is-selected" : "")}
               onClick={() => setSelectedId("__new__")}
             >
-              <span className="course-picker-chip-name">➕ 新建课程</span>
+              <span className="course-picker-chip-name">➕ New Course</span>
             </button>
           </div>
 
@@ -329,8 +329,8 @@ function CoursePickerModal({ courses, defaultId, defaultEngine, onPick, onCancel
             className="course-picker-upload-btn"
             onClick={handleUploadClick}
             disabled={uploadDisabled}
-            title={uploadDisabled ? "请先选择或新建一个课程" : "选择文件并上传"}
-          >📤 上传文件</button>
+            title={uploadDisabled ? "Please select or create a course first" : "Choose files and upload"}
+          >📤 Upload Files</button>
         </div>
 
         {/* 2026-05-20: `display: none` blocks programmatic `.click()` in

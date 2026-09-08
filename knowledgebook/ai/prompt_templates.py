@@ -20,7 +20,7 @@ import unicodedata
 # typically renders the latter as a name-token. If product later wants
 # i18n, switch to a per-lang lookup and update tests/test_persona.py +
 # settings.jsx placeholder.
-DEFAULT_PERSONA = "Study Assistant"
+DEFAULT_PERSONA = "Knowledge Agent"
 PERSONA_MAX_LEN = 40
 
 # review-swarm fix-all #1 (2026-05-12): persona is unsanitised user
@@ -66,7 +66,7 @@ def _safe_persona(name) -> str:
 def tutor_persona(name: str | None = None) -> str:
     persona = _safe_persona(name)
     return (
-        f"You are {persona}, the resident study assistant of KnowledgeBook "
+        f"You are {persona}, the resident knowledge agent of KnowledgeBook "
         "— a tool that helps university students extract knowledge from their "
         "course materials. You read the assigned texts alongside the student, "
         "explain concepts plainly, and prefer short, well-cited answers over "

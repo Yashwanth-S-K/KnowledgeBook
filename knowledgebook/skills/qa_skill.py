@@ -1217,12 +1217,30 @@ class QASkill(Skill):
 
         prompt = prompts.QA_PROMPT.format(context=context, question=question)
         prompt += prompts.USER_LANG_REMINDER(user_lang)
-        resp = await self._complete_with_backend(
-            prompt, task_type="qa_answer", system=system, temperature=0.3,
-            backend=backend,
-        )
-
-        answer = resp.content
+        try:
+            resp = await self._complete_with_backend(
+                prompt, task_type="qa_answer", system=system, temperature=0.3,
+                backend=backend,
+            )
+            answer = resp.content
+            model = resp.model
+            tokens = resp.input_tokens + resp.output_tokens
+        except Exception as exc:
+            logger.warning("RAG answer LLM call failed: %s", exc)
+            err_msg = str(exc)
+            if "429" in err_msg or "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
+                answer = (
+                    "⚠️ **API Quota / Rate Limit Reached**\n\n"
+                    "The AI backend reached its request rate or daily quota limit. "
+                    "If using Gemini Free Tier, please wait a minute or check your API key in Settings."
+                )
+            else:
+                answer = (
+                    "⚠️ **AI Service Error**\n\n"
+                    "Unable to generate an AI response at this moment. Please check your backend settings and try again."
+                )
+            model = "fallback"
+            tokens = 0
         if path == "translated" and original_query and translated_query:
             note = (
                 f"_(原问：「{_md_safe(original_query)}」在本课无直接资料；"
@@ -1252,8 +1270,8 @@ class QASkill(Skill):
         data: dict = {
             "answer": answer,
             "sources": _serialize_sources(results),
-            "model": resp.model,
-            "tokens_used": resp.input_tokens + resp.output_tokens,
+            "model": model,
+            "tokens_used": tokens,
             "path": path,
         }
         if original_query is not None:

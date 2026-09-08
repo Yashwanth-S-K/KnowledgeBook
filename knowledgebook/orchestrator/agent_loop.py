@@ -87,7 +87,7 @@ _CANCEL_WATCHER_LIMIT = threading.BoundedSemaphore(
 )
 
 
-SYSTEM_PROMPT_BASE = """You are KnowledgeBook's study assistant agent. You help students understand their course materials.
+SYSTEM_PROMPT_BASE = """You are KnowledgeBook's knowledge agent. You help users understand their course materials.
 
 Tools available:
 - `search_kb` — hybrid retrieval over indexed course chunks. Always your first move for content questions.

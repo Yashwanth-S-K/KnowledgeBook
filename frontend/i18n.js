@@ -26,12 +26,12 @@
 
     // ── language modal (first-run / re-pick) ──
     "lang_modal.title":       { zh: "Choose your reply language", en: "Choose your reply language" },
-    "lang_modal.title_bi":    { zh: "选择回答语言 / Choose your reply language", en: "选择回答语言 / Choose your reply language" },
+    "lang_modal.title_bi":    { zh: "Choose your reply language", en: "Choose your reply language" },
     "lang_modal.hint":        {
       zh: "The assistant will reply ONLY in this language for chat, notes, quiz, and report generations. You can change this anytime via the topbar chip.", en: "The assistant will reply ONLY in this language for chat, notes, quiz, and report generations. You can change this anytime via the topbar chip.",
     },
     "lang_modal.hint_bi":     {
-      zh: "选定后 AI 仅以此语言回答聊天 / 笔记 / 测验 / 报告。可随时通过顶栏切换。\nThe assistant will reply ONLY in this language. You can change anytime via the topbar.", en: "选定后 AI 仅以此语言回答聊天 / 笔记 / 测验 / 报告。可随时通过顶栏切换。\nThe assistant will reply ONLY in this language. You can change anytime via the topbar.",
+      zh: "The assistant will reply ONLY in this language for chat, notes, quiz, and report generations. You can change this anytime via the topbar chip.", en: "The assistant will reply ONLY in this language for chat, notes, quiz, and report generations. You can change this anytime via the topbar chip.",
     },
 
     // ── topbar ──
@@ -42,7 +42,7 @@
     },
     "topbar.lang_chip_title":        { zh: "Reply language preference (click to change)", en: "Reply language preference (click to change)" },
     "topbar.lang_chip_title_unset":  { zh: "Pick reply language", en: "Pick reply language" },
-    "topbar.lang_chip_zh":           { zh: "中", en: "中" },
+    "topbar.lang_chip_zh":           { zh: "ZH", en: "ZH" },
     "topbar.lang_chip_en":           { zh: "EN", en: "EN" },
     "topbar.backend_cycle":          { zh: "Click to switch backend", en: "Click to switch backend" },
     "topbar.backend_only":           { zh: "Only configured backend", en: "Only configured backend" },
@@ -175,10 +175,10 @@
     "settings.section_lang":       { zh: "Reply language", en: "Reply language" },
     "settings.section_embedding":  { zh: "Embedding model", en: "Embedding model" },
     "settings.section_cache":      { zh: "Frontend cache", en: "Frontend cache" },
-    "settings.lang_zh_chip":       { zh: "🇨🇳 中文", en: "🇨🇳 中文" },
+    "settings.lang_zh_chip":       { zh: "Chinese", en: "Chinese" },
     "settings.lang_en_chip":       { zh: "🇺🇸 English", en: "🇺🇸 English" },
     "settings.lang_current":       { zh: "Current: {label}", en: "Current: {label}" },
-    "settings.lang_label_zh":      { zh: "中文", en: "中文" },
+    "settings.lang_label_zh":      { zh: "Chinese", en: "Chinese" },
     "settings.lang_label_en":      { zh: "English", en: "English" },
     "settings.lang_unset":         {
       zh: "Not set — you'll be prompted on launch", en: "Not set — you'll be prompted on launch",
@@ -313,8 +313,8 @@
     "mindmap.hide_legend":         { zh: "Hide legend", en: "Hide legend" },
 
     // ── assistant (chat sidebar) ──
-    "assistant.default_persona":      { zh: "Study Assistant", en: "Study Assistant" },
-    "assistant.persona_desc":         { zh: "Study assistant · course material Q&A", en: "Study assistant · course material Q&A" },
+    "assistant.default_persona":      { zh: "Knowledge Agent", en: "Knowledge Agent" },
+    "assistant.persona_desc":         { zh: "Knowledge agent · course material Q&A", en: "Knowledge agent · course material Q&A" },
     "assistant.placeholder_normal":   { zh: "Ask {name} a question…", en: "Ask {name} a question…" },
     "assistant.placeholder_thinking": { zh: "Esc to cancel · Shift+Enter for newline", en: "Esc to cancel · Shift+Enter for newline" },
     "assistant.send":                 { zh: "Send (Enter)", en: "Send (Enter)" },
