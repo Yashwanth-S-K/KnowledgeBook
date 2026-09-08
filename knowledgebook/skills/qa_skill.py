@@ -1335,7 +1335,7 @@ class QASkill(Skill):
             tokens = resp.input_tokens + resp.output_tokens
         except Exception as exc:  # last-resort: keep the chat alive
             logger.warning("general path LLM call failed: %s", exc)
-            content = "暂时无法生成回答，请稍后重试。"
+            content = "Unable to generate response, please try again later."
             model = "fallback"
             tokens = 0
 

@@ -155,11 +155,11 @@
     if (source.fileType === "pptx" && source.viewableAsPdf) {
       return { canPreview: true, reason: "" };
     }
-    const labelMap = { pptx: "PPTX", docx: "DOCX", md: "Markdown", txt: "纯文本" };
+    const labelMap = { pptx: "PPTX", docx: "DOCX", md: "Markdown", txt: "Plain text" };
     const label = labelMap[source.fileType] || source.fileType;
     return {
       canPreview: false,
-      reason: label ? `${label} 文件在 Reader 中查看` : "",
+      reason: label ? `View ${label} file in Reader` : "",
     };
   }
 
@@ -882,13 +882,13 @@
   // them with stable codes; the UI then has to translate them so users
   // don't see the raw "stream_failed" token.
   const STREAM_ERROR_MESSAGES = {
-    stream_failed:        "生成失败，请稍后重试 / Generation failed; please retry.",
-    upstream_error:       "上游服务异常 / Upstream service error.",
-    endpoint_error:       "服务端错误 / Server endpoint error.",
-    agent_error:          "Agent 出错 / Agent error.",
-    no_assistant_message: "Agent 未返回任何内容 / Agent returned no message.",
-    tool_execution_failed:"工具执行失败 / Tool execution failed.",
-    quiz_generation_failed:"题目生成失败 / Quiz generation failed.",
+    stream_failed:        "Generation failed; please retry.",
+    upstream_error:       "Upstream service error.",
+    endpoint_error:       "Server endpoint error.",
+    agent_error:          "Agent error.",
+    no_assistant_message: "Agent returned no message.",
+    tool_execution_failed:"Tool execution failed.",
+    quiz_generation_failed:"Quiz generation failed.",
   };
 
   function formatStreamErrorMessage(code, fallback) {

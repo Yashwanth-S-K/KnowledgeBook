@@ -313,8 +313,11 @@ class KBStore:
         engine_changed = prev_engine != engine
 
         if not changeset.has_changes and not engine_changed and (course_artifacts / "chunks.json").exists():
-            logger.info(f"No changes detected for {course_id}, loading cached chunks")
-            return self._load_course(course_id)
+            cached_chunks = self._load_all_chunks(course_id)
+            if cached_chunks:
+                logger.info(f"No changes detected for {course_id}, loading {len(cached_chunks)} cached chunks")
+                return self._load_course(course_id)
+            logger.info(f"Cached chunks for {course_id} is empty (0 chunks); forcing re-extraction")
         if engine_changed:
             logger.info(f"Extract engine changed: {prev_engine} → {engine}, re-extracting {course_id}")
 
