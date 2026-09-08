@@ -159,7 +159,7 @@ function DocumentTextBody({ doc, activePage, highlightedId, onCite, navEpoch }) 
 // `outlineHidden` (R5-2 fix-all v4 #2): when truthy we append `#navpanes=0`
 // to suppress PDFium's bookmark/thumbnail side panel so the slide canvas
 // gets the full horizontal room. User can toggle via the small floating
-// "📑 索引" button in the Reader pane; pref persists via
+// "📑 Index" button in the Reader pane; pref persists via
 // StudyState.savePdfOutlineHidden.
 function DocumentPdfFrame({ courseId, docId, sourceFile, activePage, navEpoch, outlineHidden }) {
   // R5-2 fix-all v8: PDFium reads `#page=N` at LOAD time only. The previous
@@ -319,7 +319,7 @@ function Reader({ sources, activeCourse, activeId, activePage, onHighlight, high
 
   const pageLabel = activePage ? `Page ${activePage}` : "Overview";
   let banner;
-  if (showRealChunk) banner = `《${chunkData.source_file}》 · Page ${chunkData.page ?? "—"}`;
+  if (showRealChunk) banner = `${chunkData.source_file} · Page ${chunkData.page ?? "—"}`;
   else if (docData) {
     const pages = docData.page_range;
     banner = pages
@@ -411,7 +411,7 @@ function Reader({ sources, activeCourse, activeId, activePage, onHighlight, high
 
         <div className="page-footer mono">
           <span>KnowledgeBook Reader</span>
-          <span>{showRealChunk ? `《${chunkData.source_file}》` : pageLabel}</span>
+          <span>{showRealChunk ? chunkData.source_file : pageLabel}</span>
         </div>
       </article>
     </div>

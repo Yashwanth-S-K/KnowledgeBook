@@ -1101,14 +1101,15 @@
   const _USER_LANG_VALID = new Set(["zh", "en"]);
   const DEFAULT_LANG_CHOICES = [
     { code: "en", label: "English", hint: "Reply in English" },
+    { code: "zh", label: "Chinese (中文)", hint: "Reply in Chinese" },
   ];
 
   function loadUserLang(storage) {
     try {
       const raw = storage.getItem(USER_LANG_KEY);
-      if (!raw) return "en";
-      return _USER_LANG_VALID.has(raw) ? raw : "en";
-    } catch (e) { return "en"; }
+      if (!raw) return null;
+      return _USER_LANG_VALID.has(raw) ? raw : null;
+    } catch (e) { return null; }
   }
 
   function saveUserLang(storage, lang) {

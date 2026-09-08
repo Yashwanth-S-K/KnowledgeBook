@@ -416,8 +416,7 @@ def _concept_embed_text(c: Concept, chunk_text_lookup: dict[str, str] | None = N
     2026-05-13 cross-lingual fix: pre-fix the text was just `name。definition`,
     both of which inherit the SOURCE document's language. A KG built from an
     English slide deck ends up with concept names like "Self-Attention" and
-    English definitions — when a Chinese-speaking user queries "什么是
-    attention机制", the all-MiniLM-L6-v2 embedding (English-leaning) ranks
+    English definitions — when a user queries "what is attention mechanism", the all-MiniLM-L6-v2 embedding (English-leaning) ranks
     Chinese-named concepts from sibling chapters higher than the actual
     English match, so GraphRAG silently routes to the wrong file.
 

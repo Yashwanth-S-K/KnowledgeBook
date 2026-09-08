@@ -82,8 +82,7 @@ def _normalize_name(name: str) -> str:
 
     fix-all v3 #L1: NFKC normalisation collapses full-width / half-width
     forms, Unicode compatibility variants, and most CJK punctuation
-    differences so a Stage A topic emitted as `卷積神經網絡` and a Stage
-    B leaf emitted as `卷积神经网络` (or "Ｃｏｎｖ" vs "Conv") aren't
+    differences so variants like "Ｃｏｎｖ" vs "Conv" aren't
     persisted as two records.
     """
     s = unicodedata.normalize("NFKC", str(name or "")).lower().strip()

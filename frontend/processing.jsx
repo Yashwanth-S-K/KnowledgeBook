@@ -43,14 +43,12 @@ function buildStageDefs(t) {
   }));
 }
 
-// Locale-aware clock formatter. Suffixes follow the user's UI language: CN uses
-// the all-CJK form (5秒 / 3分2秒 / 1小时), EN uses compact (5s / 3m2s / 1h).
+// Clock formatter. Suffixes use compact notation (5s / 3m2s / 1h).
 function _fmtClock(secs, lang) {
   if (!Number.isFinite(secs) || secs < 0) return "—";
-  const cn = (lang || "en") === "zh";
-  const S = cn ? "秒" : "s";
-  const M = cn ? "分" : "m";
-  const H = cn ? "小时" : "h";
+  const S = "s";
+  const M = "m";
+  const H = "h";
   const s = Math.floor(secs);
   if (s < 60) return `${s}${S}`;
   const m = Math.floor(s / 60);

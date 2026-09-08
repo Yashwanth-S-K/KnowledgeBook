@@ -7,7 +7,7 @@ from knowledgebook.orchestrator.agent_tools import Tool, validate_course_id
 DESCRIPTION = """Generate a structured study note for a course/topic and save it to disk.
 
 Usage:
-- Call this only when the user explicitly asks for a "note", "study note", "summary doc", "笔记". For short answers, just answer in your text response after `search_kb` — do NOT call this speculatively.
+- Call this only when the user explicitly asks for a "note", "study note", or "summary doc". For short answers, just answer in your text response after `search_kb` — do NOT call this speculatively.
 - `course_id` is required.
 - `topic` narrows the note to a single concept. Omit to generate a full-course overview note (slow; only when explicitly requested).
 - Output is always LaTeX (.tex file under artifacts/courses/<course>/notes/). Returns {output_path, format, topic, sources_used}.

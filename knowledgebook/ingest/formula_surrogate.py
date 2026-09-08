@@ -37,26 +37,26 @@ from knowledgebook.types import Chunk
 logger = logging.getLogger(__name__)
 
 
-SURROGATE_PROMPT = """你是一个数学公式翻译助手。把下面文本中的 LaTeX 公式翻译成自然语言描述，保留所有非公式文本完全不变。
+SURROGATE_PROMPT = """You are a mathematical formula translation assistant. Translate the LaTeX formulas in the text below into natural language descriptions, keeping all non-formula text completely unchanged.
 
-规则：
-1. 把 $$...$$ block 替换为 "公式：<自然语言描述>"，嵌入原位置
-2. 把 inline $...$ 替换为 "<自然语言描述>"
-3. 数学符号用中文术语：α/alpha → 阿尔法或前向变量、β → 贝塔或后向变量、∑ → 求和、∫ → 积分、∏ → 连乘、∂ → 偏导、δ → 维特比变量
-4. 状态变量保留 q_t / s_j 这种容易搜的形式（不要写成"q下标t"）
-5. 保留所有非公式中文 / 英文文本一字不改
-6. 输出语言与输入一致
+Rules:
+1. Replace $$...$$ blocks with "Formula: <natural language description>", embedded in original position.
+2. Replace inline $...$ with "<natural language description>".
+3. Use clear mathematical terms: alpha -> alpha or forward variable, beta -> beta or backward variable, sum -> summation, int -> integral, prod -> product, partial -> partial derivative, delta -> Viterbi variable.
+4. Keep state variables like q_t / s_j in easily searchable form.
+5. Preserve all non-formula text completely.
+6. Match output language with the input text.
 
-举例：
-输入：维特比变量 δ_t(i) 满足递归 $$\\delta_t(j) = \\max_i [\\delta_{t-1}(i) \\cdot a_{ij}] \\cdot b_j(o_t)$$
-输出：维特比变量 δ_t(i) 满足递归 公式：在时刻t状态j的维特比变量等于 在时刻t-1所有状态i上 维特比变量乘以从i到j的状态转移概率a_ij 取最大值 再乘以状态j在时刻t发射观测o_t的概率b_j(o_t)
+Example:
+Input: Viterbi variable δ_t(i) satisfies recursion $$\\delta_t(j) = \\max_i [\\delta_{t-1}(i) \\cdot a_{ij}] \\cdot b_j(o_t)$$
+Output: Viterbi variable δ_t(i) satisfies recursion Formula: at time t state j Viterbi variable equals maximum over state i at time t-1 of Viterbi variable times state transition probability a_ij from i to j times emission probability b_j(o_t) of observation o_t at state j at time t
 
-仅输出改写后的文本，不要任何 markdown 标记、不要解释，不要前后缀。
+Output ONLY the rewritten text, without any markdown formatting, explanations, or prefixes/suffixes.
 
-输入：
+Input:
 {text}
 
-输出："""
+Output:"""
 
 
 # A "formula-bearing" chunk that's worth surrogating: must actually have at

@@ -77,7 +77,7 @@ def _scripted_stream(turns: list[list[dict]], record_calls: list | None = None):
 
 def test_compose_system_prompt_no_course_only_base():
     p = compose_system_prompt(None, None)
-    assert "study assistant" in p.lower()
+    assert "knowledge agent" in p.lower()
     assert "Active course" not in p
     assert "Available courses" not in p
 

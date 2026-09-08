@@ -101,7 +101,7 @@ class QuizGeneratorSkill(Skill):
         output_dir = config.ARTIFACTS_DIR / "courses" / course_id / "quizzes"
         output_dir.mkdir(parents=True, exist_ok=True)
         output_path = output_dir / f"quiz_{timestamp}.json"
-        output_path.write_text(json.dumps(questions, ensure_ascii=False, indent=2))
+        output_path.write_text(json.dumps(questions, ensure_ascii=False, indent=2), encoding="utf-8")
 
         return SkillResult(
             success=True,

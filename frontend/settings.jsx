@@ -2,7 +2,7 @@
 // Settings — central preferences + read-only system status.
 //
 // A-tier (2026-05-12): no API-key editing on the client. Keys live in the
-// server-side .env; this page shows "已配置 / 未配置" badges only. All
+// server-side .env; this page shows "Configured / Unconfigured" badges only. All
 // editable state is hoisted from <App> via props — we never read or write
 // localStorage directly except for the cache-management block at the
 // bottom, which is purely a "view + clear" surface over the existing
@@ -23,10 +23,11 @@ function _scanLocalStorage() {
   //   course: nano-nlm:v1:<course_id>:<kind>
   //   other:  anything not starting with nano-nlm:v1
   //
-  // SECURITY (review-swarm L2): `bucket.other` 只保留 {key, bytes} —— 它的
-  // value 内容必须永远不渲染。同源下其他页（或浏览器扩展）写入的 localStorage
-  // 可能包含敏感数据；当前 UI 仅显示 other 桶的计数（settings-cache-summary 第三格），
-  // 如果未来添加 other 详情表，必须仍只渲染 key 名，绝不渲染 value。
+  // SECURITY (review-swarm L2): `bucket.other` only keeps {key, bytes} — its
+  // value content must never be rendered. Other pages (or extensions)
+  // on the same origin could write sensitive data to localStorage; current
+  // UI only displays the count of the other bucket. If a detail table is added,
+  // it must still only render key names, never values.
   const buckets = { global: [], course: {}, other: [] };
   try {
     for (let i = 0; i < window.localStorage.length; i++) {
@@ -48,7 +49,7 @@ function _scanLocalStorage() {
         buckets.other.push({ key: k, bytes });
       }
     }
-  } catch (e) { /* Safari private mode 等会抛 — 只读路径，跳过即可 */ }
+  } catch (e) { /* Safari private mode throws — read-only path, skip */ }
   return buckets;
 }
 
@@ -84,9 +85,9 @@ function Badge({ ok, labelOk, labelBad }) {
   );
 }
 
-// review-swarm M1: 三态 badge — backendStatus 尚未返回时（首屏 ~200ms）所有
-// API key 都会 bool-coerce 成 false，badge 闪红"未配置"误导用户。loading
-// 时改用 warn 态"加载中"，与 embed_warm 三态约定一致。
+// review-swarm M1: Three-state badge — before backendStatus returns (initial screen ~200ms)
+// all API keys would bool-coerce to false, showing a misleading "Unconfigured" badge.
+// When loading, use warn state "Loading", consistent with embed_warm.
 function LoadingBadge({ ready, ok, labelOk, labelBad }) {
   const lang = (typeof window !== "undefined" && window.LangContext)
     ? React.useContext(window.LangContext) : "en";
@@ -605,7 +606,7 @@ function Settings({
       }
       toDel.forEach(k => window.localStorage.removeItem(k));
     } catch (e) {
-      // review-swarm L3: 配额耗尽 / 存储损坏时也要可观测，便于排查。
+      // review-swarm L3: Observe quota exhaustion / storage corruption for debugging.
       console.warn("[settings] clearCourseCache failed:", e);
     }
     rescan();
@@ -618,8 +619,8 @@ function Settings({
       for (let i = 0; i < window.localStorage.length; i++) {
         const k = window.localStorage.key(i);
         if (!k || !k.startsWith("nano-nlm:v1:")) continue;
-        // 保留偏好类全局 key
-        // 与 CLAUDE.md 的全局偏好键清单保持同步（flat `nano-nlm:v1:<kind>`）。
+        // Preserve preference global keys
+        // Keep in sync with global preference keys list in CLAUDE.md (flat `nano-nlm:v1:<kind>`).
         const preserved = new Set([
           "nano-nlm:v1:backend",
           "nano-nlm:v1:persona",
@@ -667,9 +668,9 @@ function Settings({
     window.location.reload();
   }
 
-  // ── 后端可用性 ──
-  // review-swarm M1: 区分 "backendStatus 还没拉到" 与 "字段确实是 false/null"。
-  // statusReady 用于驱动加载态 badge / 占位符，避免首屏闪红误导。
+  // ── Backend Availability ──
+  // review-swarm M1: Distinguish "backendStatus not loaded yet" vs "field is false/null".
+  // statusReady drives loading state badge / placeholder to prevent misleading error flashes.
   // The AI Backend & Models block is now driven by <ProvidersMatrix>;
   // the legacy `available` / `claudeAvailable` / `localAvailable` /
   // `loadingDash` derived state is no longer needed here.
@@ -702,7 +703,7 @@ function Settings({
     }
   }
 
-  // ── 课程信息（用于课程缓存表） ──
+  // ── Course Info (for course cache table) ──
   const courseLookup = useSMemo(() => {
     const m = {};
     for (const c of (courses || [])) m[c.id] = c;
@@ -838,7 +839,7 @@ function Settings({
           <Row label={t("settings.row.pptx_pdf")} value={<LoadingBadge ready={statusReady} ok={!!s.pptx_pdf_available} labelOk={t("settings.badge.available")} labelBad={t("settings.badge.unavailable")} />} />
         </Section>
 
-        {/* ───────── 外观 ─────────
+        {/* ───────── Appearance ─────────
             Theme picker (Paper / Dark / Auto) intentionally hidden while we
             iterate on the dark palette — the dark CSS is still in styles.css,
             re-surface this row when ready. */}
@@ -876,7 +877,7 @@ function Settings({
           </div>
         </Section>
 
-        {/* ───────── 用户偏好 ───────── */}
+        {/* ───────── User Preferences ───────── */}
         <Section title={t("settings.section.user_prefs")} hint={t("settings.section.appearance_hint")}>
           <div className="settings-pref-row">
             <div className="settings-pref-label">{t("settings.lang_row_label")}</div>
@@ -972,7 +973,7 @@ function Settings({
           </div>
         </Section>
 
-        {/* ───────── 本机缓存 ───────── */}
+        {/* ───────── Local Cache ───────── */}
         <Section title={t("settings.section.cache")} hint={t("settings.section.cache_hint", { bytes: _formatBytes(totalCacheBytes) })}>
           <div className="settings-cache-summary">
             <div>
@@ -1015,13 +1016,12 @@ function Settings({
           </div>
         </Section>
 
-        {/* ───────── 系统状态 ───────── */}
+        {/* ───────── System Status ───────── */}
         <Section title={t("settings.section.system")} hint={`v${s.version || "—"}`}>
           <Row label={t("settings.row.courses")} value={s.courses ?? "—"} />
           <Row label={t("settings.row.chunks")} value={(s.total_chunks ?? 0).toLocaleString()} />
-          {/* "累计成本" 行 2026-05-20 删除：router._track_usage 只累加 token
-              数，从未接定价表，total_cost 一直返回 0.0。要恢复需为每个 backend
-              加 $/1M-token 价目表 — 直到那时之前显示 0 只会误导。 */}
+          {/* "Total Cost" row removed: router._track_usage only accumulates token
+              counts and does not track pricing tables, total_cost always returns 0.0. */}
           <Row label={t("settings.row.tokens")} value={
             s.usage
               ? t("settings.tokens_value", {

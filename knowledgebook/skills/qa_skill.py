@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 TRANSLATION_TIMEOUT_SECONDS = 5.0
 
 # 2026-05-16: multi-turn history rewrite — disambiguate follow-up questions
-# ("公式是什么？" after "什么是贝叶斯？") into self-contained retrieval
+# ("what is the formula?" after "what is Bayes?") into self-contained retrieval
 # queries before hitting BM25/vector/graphrag. Same shape as translation:
 # bound by wall time so a stalled provider can't double chat latency.
 # fix-all v1 #M4 (2026-05-16): trimmed 8s → 5s after codex GPT typically
@@ -213,7 +213,7 @@ DEFAULT_GRAPHRAG_TOP1_THRESHOLD = 0.15
 # cosine between the admission floor (0.15) and this ceiling (0.30) is
 # admitted but flagged as low-confidence — the system prompt gains a
 # "refuse if context is insufficient" addendum and the response carries
-# a "_(检索置信度较低)_" preface so the user knows the model may be
+# a "_(Low retrieval confidence)_" preface so the user knows the model may be
 # stretching. Tunable via GRAPHRAG_LOW_CONFIDENCE_CEILING.
 DEFAULT_GRAPHRAG_LOW_CONF_CEILING = 0.30
 
@@ -365,7 +365,7 @@ class QASkill(Skill):
             if rewritten and rewritten != question:
                 # fix-all v1 #L2 (2026-05-16): collapse whitespace +
                 # strip trailing punctuation before equality check so a
-                # cosmetic "公式是什么 " (trailing space) doesn't fire
+                # cosmetic "what is the formula " (trailing space) doesn't fire
                 # a spurious chip. The rewriter's output is stable
                 # enough that this catches only true no-ops.
                 if _normalise_for_compare(rewritten) != _normalise_for_compare(question):
@@ -385,7 +385,7 @@ class QASkill(Skill):
 
         if rewritten_query and result.success and isinstance(result.data, dict):
             # Surface the rewritten query to the client so the UI can show
-            # "📝 改写: …" — same transparency pattern as
+            # "📝 Rewrite: …" — same transparency pattern as
             # `translated_query` on path="translated". Don't clobber if a
             # downstream path already set it (defensive).
             data = dict(result.data)
@@ -482,7 +482,7 @@ class QASkill(Skill):
             return None
 
         # fix-all v1 #M3 (2026-05-16 review-swarm): drop the legacy
-        # "Rewritten:" / "改写:" / etc. label-strip. The prompt explicitly
+        # "Rewritten:" label-strip. The prompt explicitly
         # says "no prefix, no explanation"; trusting the rewriter is safer
         # than stripping arbitrary leading labels, because a jailbreak that
         # emits `Rewritten: <attacker payload>` would have had its prefix
@@ -535,7 +535,7 @@ class QASkill(Skill):
         if not question:
             return SkillResult(success=False, error="No question provided")
 
-        # Route on the retrieval query — for a short follow-up like "为什么?"
+        # Route on the retrieval query — for a short follow-up like "why?"
         # the rewriter expands it into a substantive RAG-shaped question,
         # which is the intended UX for a study tool. If no rewrite happened,
         # retrieval_query == question and the routing is unchanged.
@@ -569,7 +569,7 @@ class QASkill(Skill):
         # .json`, runs `_maybe_graphrag` in parallel via gather, then
         # merges by chunk_id (best-score wins) and sorts by cosine.
         # Pre-fix the only retrieval in All Courses mode was plain
-        # BM25/vector RRF — a short query like "什么是精度" couldn't
+        # BM25/vector RRF — a short query like "what is precision" couldn't
         # cross the per-course score gate (char-bigram noise was too
         # weak across all 5+ courses) and fell straight through to the
         # general path. Cost: +200-500ms latency (bounded by slowest KG
@@ -700,7 +700,7 @@ class QASkill(Skill):
         # fall through to translation / cross-course / general. Round 2.1 #2:
         # before the gate-aware check, filter_empty short-circuited on any
         # raw with hits, so weak BM25 char-bigram noise on a meta query
-        # ("这是什么课" with default-checked files) blocked translation /
+        # ("what is this course" with default-checked files) blocked translation /
         # general entirely. Now the boilerplate fires only when narrowing
         # was the actual cause.
         if checked_files and raw:
@@ -777,7 +777,7 @@ class QASkill(Skill):
 
         # ── Cross-course fallback (#3): own course + translation both 0 → ──
         # search All Courses; if a sibling course has the answer, surface it
-        # with a "本课无相关内容" annotation. Skipped when the caller is
+        # with a "Not covered in this course" annotation. Skipped when the caller is
         # already in All-Courses mode (course_filter is None) — there is no
         # "current course" to fall back from.
         cross = self._maybe_cross_course_fallback(
@@ -1199,7 +1199,7 @@ class QASkill(Skill):
         # answer the question. Per the supplementation policy (system
         # rules 6 + 7), instead of refusing the model should split the
         # reply: cite whatever the chunks actually mention, then add a
-        # "补充背景" part with general knowledge — unless the topic is
+        # "Background" part with general knowledge — unless the topic is
         # so obscure that general knowledge wouldn't help.
         if low_confidence:
             system += (
@@ -1210,7 +1210,7 @@ class QASkill(Skill):
                 "what isn't there). DO still split the reply into the "
                 "two-part structure: name the partial / adjacent content "
                 "the chunks DO have (with [Source: ...] citations), "
-                "then under '补充背景 / Background' answer the "
+                "then under 'Background' answer the "
                 "user's real question from general knowledge. This is "
                 "more helpful than a refusal."
             )
@@ -1243,21 +1243,19 @@ class QASkill(Skill):
             tokens = 0
         if path == "translated" and original_query and translated_query:
             note = (
-                f"_(原问：「{_md_safe(original_query)}」在本课无直接资料；"
-                f"已自动翻译为「{_md_safe(translated_query)}」后检索。"
-                "Translated retrieval.)_"
+                f"_(Original query: \"{_md_safe(original_query)}\" had no direct results in this course; "
+                f"automatically translated to \"{_md_safe(translated_query)}\" for retrieval.)_"
             )
             answer = f"{note}\n\n{answer}"
         elif path == "cross-course" and cross_course_origin:
             note = (
-                f"_(本课无相关内容，从《{_md_safe(cross_course_origin)}》"
-                "课中找到相关材料；Found in another course.)_"
+                f"_(No relevant content in this course — found related material "
+                f"in \"{_md_safe(cross_course_origin)}\".)_"
             )
             answer = f"{note}\n\n{answer}"
         elif low_confidence:
             note = (
-                "_(本次检索置信度较低，回答可能不完全贴合问题。"
-                "Low retrieval confidence — the answer may not directly match.)_"
+                "_(Low retrieval confidence — the answer may not directly match your question.)_"
             )
             answer = f"{note}\n\n{answer}"
 

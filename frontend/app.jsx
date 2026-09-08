@@ -396,7 +396,7 @@ function App() {
     } catch (e) { return APPEARANCE_DEFAULTS.baseSize; }
   });
   // For Auto mode: the resolved theme ("paper" or "dark") so Settings can
-  // show "Auto · 现在 = Dark". Updated by the theme effect below.
+  // show "Auto · Now = Dark". Updated by the theme effect below.
   const [autoResolved, setAutoResolved] = useState("paper");
   const commitTheme = React.useCallback((v) => {
     setTheme(v);
@@ -525,8 +525,8 @@ function App() {
   // 2026-05-12: user-customisable assistant name. Surfaced via the
   // Settings tab (⚙ icon button in the topbar opens it); flows to
   // /api/chat's `persona` field → qa_skill injects it into every system
-  // prompt path so "你是谁" returns the chosen name. Empty → backend
-  // falls back to DEFAULT_PERSONA ("Study Assistant"). Length capped to
+  // prompt path so "who are you" returns the chosen name. Empty → backend
+  // falls back to DEFAULT_PERSONA ("Knowledge Agent"). Length capped to
   // 40 chars by the server-side Pydantic validator (PERSONA_MAX_LEN);
   // the frontend cap mirrors it as defense in depth.
   const PERSONA_MAX = 40;
@@ -646,7 +646,7 @@ function App() {
   }
 
   // R5-2 fix-all v3: hard-delete a course (artifacts + indices + per-course
-  // localStorage cache). User-driven only — invoked from the "管理" modal
+  // localStorage cache). User-driven only — invoked from the "Manage" modal
   // after a `window.confirm` (we hold a 2-step confirm for safety: first
   // confirm the action, then require the user to type the course name).
   // Side effects:
@@ -1060,7 +1060,7 @@ function App() {
   // the full list so qa_skill's "user pinned files → skip graphrag" branch
   // doesn't fire on the default. Previously the assistant sent the full
   // checked list to `/api/chat`, qa_skill saw `checked_files = [<all>]`,
-  // skipped graphrag, and short course-specific queries like "什么是精度"
+  // skipped graphrag, and short course-specific queries like "what is accuracy"
   // bounced through RAG → translation → cross-course → general because
   // BM25 char-bigram alone couldn't bridge the query→chunk gap that the KG
   // would have spanned.
@@ -2008,7 +2008,7 @@ function App() {
         onPick={setActiveId}
         onToggle={(id) => setSources(ss => ss.map(s => s.id === id ? { ...s, checked: !s.checked } : s))}
         onToggleMany={(ids, checked) => {
-          // Batch update so Library's 全选/全不选/反选/Shift-click range
+          // Batch update so Library's Select All / Deselect All / Invert / Shift-click range
           // produces a single React render, not N renders.
           const idSet = new Set(ids);
           setSources(ss => ss.map(s => idSet.has(s.id) ? { ...s, checked: !!checked } : s));
@@ -2037,10 +2037,10 @@ function App() {
         <div className="workspace">
           {/* 2026-05-13: the empty-courses CTA is `height/width:100%` and
               `.workspace` is `overflow:hidden`, so when visibleCourses is
-              empty (e.g. all courses hidden via 管理 modal) it covers
+              empty (e.g. all courses hidden via Manage modal) it covers
               whatever mode-specific view rendered below it. Settings and
               History are course-agnostic and are the exact escape hatches
-              the user needs in that state ("全部恢复显示" lives in
+              the user needs in that state ("Unhide All" lives in
               Settings) — gate the CTA off those two modes so the user
               can actually reach them. */}
           {(!uploading && !processing
@@ -2155,7 +2155,7 @@ function App() {
                 // Date.now()` + `setProcessing({..., startedAt:
                 // startedAtMs })` on every invocation. After the POST
                 // returns it also patches estimatedSeconds + totalPages
-                // from the fresh response. So the "剩余 ~0s" forever
+                // from the fresh response. So the "Remaining ~0s" forever
                 // bug from a prior implementation is already fixed by
                 // construction — DO NOT extract startedAtMs above this
                 // closure or the retry will inherit the original ts.

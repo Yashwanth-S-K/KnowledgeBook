@@ -385,12 +385,12 @@ def test_chat_translation_retry_happy(chat_client, monkeypatch):
     # Answer must include the translation note so the user sees what happened
     assert "translated" in body["answer"].lower() or "翻译" in body["answer"]
     # Persona pin: the QA-path system message (not the translation system) must
-    # carry "Study Assistant" (the DEFAULT_PERSONA backstop from 2026-05-12
+    # carry "Knowledge Agent" (the DEFAULT_PERSONA backstop from 2026-05-12
     # when persona became user-customisable). Both calls capture; assert at
     # least the QA call.
     qa_systems = [s for s in captured_systems if "Reference documents" in s
-                  or "Study Assistant" in s]
-    assert any("Study Assistant" in s for s in qa_systems), \
+                  or "Knowledge Agent" in s]
+    assert any("Knowledge Agent" in s for s in qa_systems), \
         "translated path must inherit DEFAULT_PERSONA via qa_system()"
 
 
@@ -822,12 +822,12 @@ def test_chat_cross_course_fallback_happy(chat_client, monkeypatch):
     assert body["path"] == "cross-course", body
     assert body.get("cross_course_origin"), "must record which course matched"
     # answer should carry a "from another course" annotation
-    assert "本课" in body["answer"] or "另一" in body["answer"] or "another" in body["answer"].lower()
+    assert "本课" in body["answer"] or "另一" in body["answer"] or "another" in body["answer"].lower() or "this course" in body["answer"].lower()
     # Persona pin: cross-course path reuses qa_system(), must carry the
     # DEFAULT_PERSONA fallback when ChatRequest.persona is unset.
     qa_systems = [s for s in captured_systems if "Reference documents" in s
-                  or "Study Assistant" in s]
-    assert any("Study Assistant" in s for s in qa_systems), \
+                  or "Knowledge Agent" in s]
+    assert any("Knowledge Agent" in s for s in qa_systems), \
         "cross-course path must inherit DEFAULT_PERSONA via qa_system()"
 
 
@@ -899,11 +899,11 @@ def test_courses_endpoint_includes_lang_fingerprint(chat_client):
     assert by_id["zh_course"]["lang"] == "zh"
 
 
-# ── Round 2.1 — 5 条收尾测试（实测 bug fix 钉住） ──────────────────────
+# ── Round 2.1 — 5 final tests (pinned bug fixes) ──────────────────────
 
 
 def test_classify_input_identity_zh_routes_general():
-    """#R4-1 mini: 中文身份问题不能进 RAG（RAG 文档里没有 persona 信息）。"""
+    """#R4-1 mini: Chinese identity questions must not go to RAG (no persona in docs)."""
     from knowledgebook.orchestrator import router_intent as ri
 
     for q in ("你是谁?", "你是谁", "你叫什么名字", "介绍一下自己"):
@@ -913,7 +913,7 @@ def test_classify_input_identity_zh_routes_general():
 
 
 def test_classify_input_identity_en_routes_general():
-    """#R4-1 mini: 英文身份问题同样路由 general。"""
+    """#R4-1 mini: English identity questions also route to general."""
     from knowledgebook.orchestrator import router_intent as ri
 
     for q in ("who are you?", "Who are you", "what is your name", "Tell me about yourself"):
@@ -923,7 +923,7 @@ def test_classify_input_identity_en_routes_general():
 
 
 def test_classify_input_meta_course_routes_general():
-    """#R4-1 mini: meta-course 问题（"这是什么课"/"what is this course"）路由 general。"""
+    """#R4-1 mini: meta-course questions ("what is this course about") route to general."""
     from knowledgebook.orchestrator import router_intent as ri
 
     for q in ("这是什么课?", "这是什么课", "what is this course about", "What is this course"):
@@ -933,7 +933,7 @@ def test_classify_input_meta_course_routes_general():
 
 
 def test_classify_input_bare_interrogative_routes_general():
-    """#R4-1 mini: 单 token 疑问句不进 RAG（避免凑过 score gate 拿到伪相关引用）。"""
+    """#R4-1 mini: Single-token interrogative questions do not enter RAG."""
     from knowledgebook.orchestrator import router_intent as ri
 
     for q in ("what", "what?", "Why", "how?", "什么", "为什么", "怎么"):
@@ -961,7 +961,7 @@ def test_classify_input_bare_interrogative_full_set(q):
 
 
 def test_classify_input_multi_token_what_question_kept():
-    """#R4-1 corner: 边界——`what is convolution` 是真问题，不能被 bare_q 误抓。"""
+    """#R4-1 corner: `what is convolution` is a real question, must not be caught by bare_q."""
     from knowledgebook.orchestrator import router_intent as ri
 
     for q in ("what is convolution", "why does cache matter", "什么是卷积", "为什么需要缓存"):
@@ -970,9 +970,9 @@ def test_classify_input_multi_token_what_question_kept():
 
 
 def test_chat_identity_returns_persona_blurb(chat_client, monkeypatch):
-    """#R4-3 mini: 用户问"你是谁"→ persona system prompt 触发，模型该收到带
-    DEFAULT_PERSONA ("Study Assistant") 的 system，返回身份 blurb；不应回
-    boilerplate；sources 必须空。"""
+    """#R4-3 mini: User asks "who are you" -> persona system prompt triggers, model receives
+    system prompt with DEFAULT_PERSONA ("Knowledge Agent"), returns identity blurb;
+    should not return boilerplate; sources must be empty."""
     client, server_mod = chat_client
 
     captured = {}
@@ -981,7 +981,7 @@ def test_chat_identity_returns_persona_blurb(chat_client, monkeypatch):
                    max_tokens=4096, max_retries=3, **kwargs):
         captured["system"] = system
         captured["task_type"] = task_type
-        return LLMResponse(content="I'm your Study Assistant.",
+        return LLMResponse(content="I'm your Knowledge Agent.",
                            model="fake", input_tokens=1, output_tokens=1, latency_ms=1.0)
 
     monkeypatch.setattr(server_mod.router, "complete", stub)
@@ -994,17 +994,15 @@ def test_chat_identity_returns_persona_blurb(chat_client, monkeypatch):
     assert body["sources"] == []
     assert "No relevant content" not in body["answer"]
     # Persona block reaches the model with default fallback — fix #R4-3
-    assert "Study Assistant" in captured["system"]
+    assert "Knowledge Agent" in captured["system"]
     # Identity addendum is appended — fix #R4-1 routing → correct addendum
     assert "asking who you are" in captured["system"].lower()
     assert captured["task_type"] == "qa_general"
 
 
 def test_chat_meta_course_does_not_short_circuit(chat_client, monkeypatch):
-    """#R4-2 mini: 中文 meta query 即使带 default checked_files 也不能被
-    filter_empty boilerplate 截胡 —— 路由要先把它判给 general。
-    实测 bug 1：'你是谁? 这是什么课' 被中文 BM25 char-bigram 匹配到非勾选文件
-    → filter 空 → 短路 return，从未到 general。本测试钉住 fix 后行为。"""
+    """#R4-2 mini: Chinese meta query even with default checked_files must not be intercepted
+    by filter_empty boilerplate — router should classify it as general first."""
     client, server_mod = chat_client
 
     async def stub(prompt, task_type="", system="", temperature=0.7,
@@ -1028,8 +1026,8 @@ def test_chat_meta_course_does_not_short_circuit(chat_client, monkeypatch):
 
 
 def test_chat_bare_interrogative_no_fake_sources(chat_client, monkeypatch):
-    """#R4-4 mini: 单词 'what' 进 chat，要走 general clarification，
-    sources 永远空（避免凑出伪相关引用）。"""
+    """#R4-4 mini: Single word 'what' into chat should follow general clarification,
+    sources must remain empty (avoiding spurious citations)."""
     client, server_mod = chat_client
 
     captured_prompts = []
@@ -1055,9 +1053,9 @@ def test_chat_bare_interrogative_no_fake_sources(chat_client, monkeypatch):
 
 
 def test_chat_filter_empty_only_fires_when_raw_passes_gate(chat_client, monkeypatch):
-    """#R4-2 corner: filter_empty 只在 raw 过 score gate 时短路。
-    raw 如果本来就低质量（gate 失败），不该返 boilerplate，应当让 translation /
-    cross-course / general 接力。这是 Round 2.1 #2 的核心收尾。"""
+    """#R4-2 corner: filter_empty only short-circuits when raw passes score gate.
+    If raw was low quality (gate failure), it shouldn't return boilerplate, allowing translation /
+    cross-course / general fallback."""
     client, server_mod = chat_client
 
     # raw 返回一个低分单 hit（gate 失败），且来自 user 没勾的文件

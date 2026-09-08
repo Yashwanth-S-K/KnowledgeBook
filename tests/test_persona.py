@@ -2,7 +2,7 @@
 
 Coverage:
 - Default fallback: ChatRequest.persona unset → system prompt carries
-  DEFAULT_PERSONA ("Study Assistant").
+  DEFAULT_PERSONA ("Knowledge Agent").
 - Custom value: persona="老王" → system prompt carries "You are 老王";
   Dr. Marginalia must not appear anywhere.
 - Identity path: persona reaches the IDENTITY_ADDENDUM intro line.
@@ -132,7 +132,7 @@ def test_chat_persona_custom_reaches_rag_system(chat_capture):
 
 
 def test_chat_persona_omitted_uses_default(chat_capture):
-    """No persona field → DEFAULT_PERSONA ("Study Assistant") in system."""
+    """No persona field → DEFAULT_PERSONA ("Knowledge Agent") in system."""
     client, captured = chat_capture
     r = client.post("/api/chat", json={
         "question": "memory hierarchy",
@@ -141,7 +141,7 @@ def test_chat_persona_omitted_uses_default(chat_capture):
     assert r.status_code == 200, r.text
     qa_systems = [s for s in captured["systems"] if s.startswith("You are ")]
     assert qa_systems, "no QA system prompt captured"
-    assert any("You are Study Assistant" in s for s in qa_systems), \
+    assert any("You are Knowledge Agent" in s for s in qa_systems), \
         f"expected default persona; got:\n{qa_systems}"
 
 
@@ -162,7 +162,7 @@ def test_chat_persona_blank_falls_back_to_default(chat_capture, blank):
     })
     assert r.status_code == 200, r.text
     qa_systems = [s for s in captured["systems"] if s.startswith("You are ")]
-    assert any("You are Study Assistant" in s for s in qa_systems), \
+    assert any("You are Knowledge Agent" in s for s in qa_systems), \
         f"blank persona must fall back to default; got:\n{qa_systems}"
 
 
@@ -231,7 +231,7 @@ def test_safe_persona_clamps_and_defaults():
     # And it shows up at the right place in the rendered prompt.
     assert "You are Aria" in qa_system("Aria")
     assert "Introduce yourself as Aria" in identity_addendum("Aria")
-    assert "You are Study Assistant" in qa_system(None)
+    assert "You are Knowledge Agent" in qa_system(None)
 
 
 # ── 7. review-swarm fix-all #1: prompt-injection regression ──────────
@@ -290,7 +290,7 @@ def test_safe_persona_rejects_non_string(payload):
     )
     assert _safe_persona(payload) == DEFAULT_PERSONA
     # And the rendered prompt is sane.
-    assert "You are Study Assistant" in qa_system(payload)
+    assert "You are Knowledge Agent" in qa_system(payload)
 
 
 def test_safe_persona_nfkc_normalises_zalgo():
