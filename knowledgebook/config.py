@@ -193,7 +193,7 @@ EMBEDDING_API_BASE_URL = os.getenv("EMBEDDING_API_BASE_URL", "") or OPENAI_BASE_
 EMBEDDING_PRESETS: dict[str, dict] = {
     "local_mini": {
         "label": "Local MiniLM",
-        "description": "Sentence-Transformers · English Only · Lightweight",
+        "description": "Sentence-Transformers · English Only · Lightweight (all-MiniLM-L6-v2)",
         "mode": "local",
         "model": "all-MiniLM-L6-v2",
         "dim": 384,
@@ -202,7 +202,7 @@ EMBEDDING_PRESETS: dict[str, dict] = {
     },
     "openai_large": {
         "label": "OpenAI API",
-        "description": "OpenAI 兼容 /v1/embeddings · text-embedding-3-large · 需要 API key",
+        "description": "OpenAI Compatible /v1/embeddings · text-embedding-3-large · Requires API key",
         "mode": "api",
         "model": "text-embedding-3-large",
         "dim": 3072,
@@ -211,7 +211,7 @@ EMBEDDING_PRESETS: dict[str, dict] = {
     },
     "bge_m3": {
         "label": "BGE-M3",
-        "description": "BAAI/bge-m3 本地多语言强力模型 · 首次下载 ~2GB",
+        "description": "BAAI/bge-m3 local multilingual model · ~2GB first download",
         "mode": "local",
         "model": "BAAI/bge-m3",
         "dim": 1024,
@@ -267,7 +267,7 @@ def active_preset_id() -> str:
     """Return the preset_id whose (mode, model) matches current config.
     Returns "custom" when the operator overrode EMBEDDING_MODEL via env to
     a value that doesn't match any preset — the UI then shows the active
-    radio as "未选择（自定义 env 配置）" and switches are still allowed.
+    radio as "Custom env configuration" and switches are still allowed.
     """
     for pid, p in EMBEDDING_PRESETS.items():
         if p["mode"] == EMBEDDING_MODE and p["model"] == EMBEDDING_MODEL:
