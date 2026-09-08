@@ -1,0 +1,99 @@
+# Contributing to KnowledgeBook
+
+Thanks for considering a contribution. KnowledgeBook is a small,
+self-hosted project — the bar is "does this make the single-user
+study-assistant experience better without adding operational burden."
+
+## Quick links
+
+- Bugs / feature ideas: open an [issue](https://github.com/ArthurYangX/KnowledgeBook/issues).
+- Architecture & code map: [`CLAUDE.md`](CLAUDE.md) is the canonical
+  guide. Read it before touching `api/server.py` or
+  `knowledgebook/`.
+
+## Dev setup
+
+```bash
+git clone https://github.com/ArthurYangX/KnowledgeBook
+cd KnowledgeBook
+uv venv && source .venv/bin/activate   # or: python -m venv .venv && source .venv/bin/activate
+uv pip install -e ".[test]"            # or: pip install -e ".[test]"
+cp .env.example .env       # at least one LLM key
+python api/server.py       # http://localhost:8000
+```
+
+`./dev.sh install` does the same and auto-falls back to `pip` if `uv`
+isn't on PATH.
+
+Optional extras (only if you're touching those code paths):
+
+```bash
+uv pip install -e ".[mineru]"           # MinerU OCR / scanned-PDF tests
+brew install tectonic libreoffice       # tectonic = LaTeX→PDF; soffice = pptx→PDF sidecar
+```
+
+See the README "Optional extras" table for what each enables.
+
+## Running tests
+
+The full suite runs **offline** — no LLM keys required, embeddings are
+faked deterministically, the router is monkeypatched.
+
+```bash
+pytest                              # full suite (~1000 tests, < 60s)
+pytest tests/test_api_smoke.py -x   # quick API gate
+pytest -k retrieval                 # subset by keyword
+```
+
+PRs that break `pytest` will be asked to fix the test, not delete it.
+
+## What we welcome
+
+- **Bug fixes** with a regression test in `tests/`.
+- **New LLM providers** that speak OpenAI-compatible `/v1/chat/completions`
+  — no code needed, just open an issue if you want it documented in the
+  README provider table.
+- **New skills** (quiz variants, study mode, …) following the pattern
+  in `knowledgebook/skills/` (see `CLAUDE.md → Add a new skill`).
+- **Frontend polish** — `.jsx` files, no build step, edit + refresh.
+- **Docs / typos / translations** of any size, no need to ask first.
+
+## What's out of scope (please ask before starting)
+
+These got cut deliberately to keep self-hosting simple:
+
+- Authentication / multi-tenant isolation.
+- Persistent task queues (Celery / RQ).
+- A real database (replacing `./artifacts/`).
+- A frontend build step (Vite / webpack).
+- Prometheus / OTel metrics beyond `/api/status`.
+
+If you have a strong case for one of these, open an issue first so we
+can talk about scope before you write code.
+
+## Code style
+
+- Follow what's already there. The codebase is intentionally low-magic
+  and avoids premature abstraction.
+- **No emojis** in code, comments, or logs (UI copy is the exception).
+- **Comments earn their keep** — only when the *why* is non-obvious.
+- **One-file-per-route ban**: `api/server.py` stays a single file.
+- See [`CLAUDE.md → Conventions to follow`](CLAUDE.md) for the full
+  rules.
+
+## PR checklist
+
+- [ ] `pytest` passes locally.
+- [ ] New behavior has at least one test.
+- [ ] No new dependencies unless absolutely needed (justify in the PR).
+- [ ] No secrets / API keys in commits (`.env` is gitignored — keep it
+      that way).
+- [ ] README / CHANGELOG updated if user-visible behavior changed.
+
+## License
+
+By contributing, you agree your contributions are licensed under the
+[Apache License 2.0](LICENSE), same as the rest of the project. Per
+Section 5 of the license, submitting a contribution implicitly grants
+the project the same patent and copyright license that covers the
+existing codebase — no separate CLA is required.

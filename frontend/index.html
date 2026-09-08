@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KnowledgeBook — AI Study Workbench</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400;1,8..60,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+
+  <!-- KaTeX: real LaTeX rendering for chat answers (no build step — CDN matches
+       the React/Babel deployment pattern). The `auto-render` extension is what
+       lets us call `renderMathInElement(node)` after setting innerHTML. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <!-- R4-3 fix-all v1 #A8: exact version pins so the CDN can't serve a
+       supply-chain-attacked minor/patch. SRI hashes are pending across all
+       CDN scripts (React + Babel also lack them — separate cleanup item);
+       at minimum the @3 major-only floating tag is gone. crossorigin so
+       error events propagate, matching React/Babel. -->
+  <script src="https://cdn.jsdelivr.net/npm/d3-dispatch@3.0.1" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-quadtree@3.0.1" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-timer@3.0.1" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-force@3.0.0" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+  <!-- LaTeX-refactor: CodeMirror 6 as ES modules from esm.sh for the Notes
+       editor (stex / LaTeX syntax highlighting). type="module" runs in a
+       separate scope from babel-standalone's text/babel — they don't fight.
+       On failure (esm.sh down / offline), window.__CM6 never sets and the
+       Notes editor falls back to a plain <textarea>. -->
+  <script type="module">
+    try {
+      const cmCore = await import("https://esm.sh/codemirror@6.0.1");
+      const cmState = await import("https://esm.sh/@codemirror/state@6.4.1");
+      const cmView  = await import("https://esm.sh/@codemirror/view@6.26.3");
+      const cmLang  = await import("https://esm.sh/@codemirror/language@6.10.2");
+      const stexMod = await import("https://esm.sh/@codemirror/legacy-modes@6.4.0/mode/stex");
+      window.__CM6 = {
+        ready: true,
+        EditorView: cmView.EditorView,
+        EditorState: cmState.EditorState,
+        basicSetup: cmCore.basicSetup,
+        StreamLanguage: cmLang.StreamLanguage,
+        stex: stexMod.stex,
+      };
+      window.dispatchEvent(new CustomEvent("cm6-ready"));
+    } catch (err) {
+      console.warn("CodeMirror 6 failed to load — Notes editor will fall back to <textarea>", err);
+      window.__CM6 = { ready: false, error: err };
+      window.dispatchEvent(new CustomEvent("cm6-failed"));
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- API bridge (plain JS, no Babel needed) -->
+  <script src="/static/api.js"></script>
+  <script src="/static/study-state.js"></script>
+  <!-- i18n: pure JS dictionary + t() helper. Must load AFTER React UMD (for
+       React.createContext) and BEFORE any text/babel .jsx that calls window.I18N. -->
+  <script src="/static/i18n.js"></script>
+  <!-- Shared markdown + KaTeX helpers (used by chat bubbles and the Notes
+       preview). Plain JS; loads before any Babel-transpiled component. -->
+  <script src="/static/markdown.js"></script>
+  <!-- LaTeX-refactor: latex-to-html shim. Used by the Notes preview to render
+       backend-produced LaTeX bodies without a TeX engine. Depends on
+       window.NanoMarkdown for math stashing + HTML escaping. -->
+  <script src="/static/latex-to-html.js"></script>
+
+  <!-- React components (Babel-transpiled) -->
+  <script type="text/babel" src="/static/tweaks-panel.jsx"></script>
+  <script type="text/babel" src="/static/data.jsx"></script>
+  <script type="text/babel" src="/static/library.jsx"></script>
+  <script type="text/babel" src="/static/reader.jsx"></script>
+  <script type="text/babel" src="/static/notes.jsx"></script>
+  <script type="text/babel" src="/static/mindmap.jsx"></script>
+  <script type="text/babel" src="/static/quiz.jsx"></script>
+  <script type="text/babel" src="/static/exam-prep.jsx"></script>
+  <script type="text/babel" src="/static/settings.jsx"></script>
+  <script type="text/babel" src="/static/assistant.jsx"></script>
+  <script type="text/babel" src="/static/processing.jsx"></script>
+  <script type="text/babel" src="/static/app.jsx"></script>
+</body>
+</html>
