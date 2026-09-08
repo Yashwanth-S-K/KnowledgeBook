@@ -178,7 +178,7 @@ DEFAULT_BACKEND = os.getenv("DEFAULT_BACKEND", "openai")
 EMBEDDING_API_KEY = os.getenv("EMBEDDING_API_KEY", "") or OPENAI_API_KEY
 EMBEDDING_API_BASE_URL = os.getenv("EMBEDDING_API_BASE_URL", "") or OPENAI_BASE_URL
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-EMBEDDING_GEMINI_API_KEY = os.getenv("EMBEDDING_GEMINI_API_KEY", "") or GEMINI_API_KEY
+EMBEDDING_GEMINI_API_KEY = os.getenv("EMBEDDING_GEMINI_API_KEY", "") or GEMINI_API_KEY or OPENAI_API_KEY
 
 # ── Embedding ────────────────────────────────────────────────────────
 # - "local" → sentence-transformers (offline, downloads model on first
