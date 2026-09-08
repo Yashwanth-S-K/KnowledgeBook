@@ -223,9 +223,9 @@ EMBEDDING_PRESETS: dict[str, dict] = {
     },
     "gemini_384": {
         "label": "Gemini Embedding",
-        "description": "Google Gemini Embeddings API · text-embedding-004 · Matryoshka 384d",
+        "description": "Google Gemini Embeddings API · gemini-embedding-001 · Matryoshka 384d",
         "mode": "gemini",
-        "model": "text-embedding-004",
+        "model": "gemini-embedding-001",
         "dim": 384,
         "requires_api_key": True,
         "download_size_mb": 0,
@@ -298,7 +298,7 @@ else:
     EMBEDDING_MODE = _env_embedding_mode
     EMBEDDING_MODEL = _env_embedding_model or (
         "text-embedding-3-small" if EMBEDDING_MODE == "api"
-        else ("text-embedding-004" if EMBEDDING_MODE == "gemini" else "all-MiniLM-L6-v2")
+        else ("gemini-embedding-001" if EMBEDDING_MODE == "gemini" else "all-MiniLM-L6-v2")
     )
 
 # ── Chunking defaults ────────────────────────────────────────────────

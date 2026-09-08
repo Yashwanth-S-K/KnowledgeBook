@@ -136,9 +136,9 @@ def _build_gemini_embed_fn() -> Callable[[list[str]], np.ndarray]:
         )
 
     client = genai.Client(api_key=api_key)
-    model_name = config.EMBEDDING_MODEL or "text-embedding-004"
-    if model_name in ("gemini-embedding-001", "all-MiniLM-L6-v2", ""):
-        model_name = "text-embedding-004"
+    model_name = config.EMBEDDING_MODEL or "gemini-embedding-001"
+    if model_name in ("text-embedding-004", "all-MiniLM-L6-v2", ""):
+        model_name = "gemini-embedding-001"
         logger.info("EMBEDDING_MODE=gemini: defaulting model to %s", model_name)
 
     def embed(texts: list[str]) -> np.ndarray:
