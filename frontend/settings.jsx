@@ -685,6 +685,7 @@ function Settings({
   const presets = Array.isArray(s.embedding_presets) ? s.embedding_presets : [];
   const activePresetId = s.active_preset_id || null;
   const embedApiConfigured = !!s.embedding_api_configured;
+  const embedGeminiConfigured = !!s.embedding_gemini_configured;
 
   async function pickEmbedding(presetId) {
     if (!presetId || presetId === activePresetId || embedSwitching) return;
@@ -776,10 +777,11 @@ function Settings({
 
           <div className="settings-radio-group">
             {presets.map(p => {
-              const disabled = (p.requires_api_key && !embedApiConfigured) || (embedSwitching && embedSwitching !== p.id);
+              const keyConfigured = p.mode === "gemini" ? embedGeminiConfigured : embedApiConfigured;
+              const disabled = (p.requires_api_key && !keyConfigured) || (embedSwitching && embedSwitching !== p.id);
               const isActive = activePresetId === p.id;
               const isSwitching = embedSwitching === p.id;
-              const blockedByKey = p.requires_api_key && !embedApiConfigured;
+              const blockedByKey = p.requires_api_key && !keyConfigured;
               return (
                 <label
                   key={p.id}

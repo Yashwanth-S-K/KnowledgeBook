@@ -73,7 +73,7 @@ def test_status_lists_backends_and_chunks(client):
     body = r.json()
     assert "backends" in body
     assert body["total_chunks"] >= 1
-    assert body["embedding_mode"] in ("local", "api")
+    assert body["embedding_mode"] in ("local", "api", "gemini")
 
 
 def test_courses_lists_seeded_course(client):

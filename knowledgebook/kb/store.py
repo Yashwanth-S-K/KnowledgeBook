@@ -65,7 +65,13 @@ def _get_default_embed_fn() -> Callable[[list[str]], np.ndarray]:
     if mode == "api":
         return _build_api_embed_fn()
 
-    raise ValueError(f"Unknown EMBEDDING_MODE: {config.EMBEDDING_MODE!r} (expected 'local' or 'api')")
+    if mode == "gemini":
+        return _build_gemini_embed_fn()
+
+    raise ValueError(
+        f"Unknown EMBEDDING_MODE: {config.EMBEDDING_MODE!r} "
+        "(expected 'local', 'api', or 'gemini')"
+    )
 
 
 def _build_api_embed_fn() -> Callable[[list[str]], np.ndarray]:
@@ -110,6 +116,52 @@ def _build_api_embed_fn() -> Callable[[list[str]], np.ndarray]:
             out.extend(d.embedding for d in resp.data)
         arr = np.asarray(out, dtype=np.float32)
         # L2-normalize so cosine similarity ↔ inner product
+        norms = np.linalg.norm(arr, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        return arr / norms
+
+    return embed
+
+
+def _build_gemini_embed_fn() -> Callable[[list[str]], np.ndarray]:
+    """Build a Gemini Embeddings API function using 384-d MRL vectors."""
+    from google import genai
+    from google.genai import types
+
+    api_key = config.EMBEDDING_GEMINI_API_KEY
+    if not api_key:
+        raise RuntimeError(
+            "EMBEDDING_MODE=gemini requires EMBEDDING_GEMINI_API_KEY "
+            "(or GEMINI_API_KEY). Set it in .env or switch to another preset."
+        )
+
+    client = genai.Client(api_key=api_key)
+    model_name = config.EMBEDDING_MODEL or "text-embedding-004"
+    if model_name in ("gemini-embedding-001", "all-MiniLM-L6-v2", ""):
+        model_name = "text-embedding-004"
+        logger.info("EMBEDDING_MODE=gemini: defaulting model to %s", model_name)
+
+    def embed(texts: list[str]) -> np.ndarray:
+        if not texts:
+            return np.zeros((0, 384), dtype=np.float32)
+        out: list[list[float]] = []
+        batch_size = 100
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            response = client.models.embed_content(
+                model=model_name,
+                contents=batch,
+                config=types.EmbedContentConfig(
+                    task_type="SEMANTIC_SIMILARITY",
+                    output_dimensionality=384,
+                ),
+            )
+            embeddings = getattr(response, "embeddings", None)
+            if embeddings:
+                out.extend(embedding.values for embedding in embeddings)
+            elif hasattr(response, "embedding") and response.embedding:
+                out.append(response.embedding.values)
+        arr = np.asarray(out, dtype=np.float32)
         norms = np.linalg.norm(arr, axis=1, keepdims=True)
         norms[norms == 0] = 1.0
         return arr / norms

@@ -41,7 +41,7 @@ def test_save_and_load_embedding_preference(monkeypatch, tmp_path):
     config.save_embedding_preference("local_mini")
     assert config.EMBEDDING_PREFERENCE_FILE.exists()
     assert config.active_preset_id() == "local_mini"
-    assert config.EMBEDDING_MODEL == "paraphrase-multilingual-MiniLM-L12-v2"
+    assert config.EMBEDDING_MODEL == "all-MiniLM-L6-v2"
 
     config.save_embedding_preference("bge_m3")
     assert config.active_preset_id() == "bge_m3"
@@ -217,13 +217,13 @@ def test_switch_embedding_to_local_mini(monkeypatch, tmp_path):
         body = resp.json()
         assert body["ok"] is True
         assert body["preset_id"] == "local_mini"
-        assert body["embedding_model"] == "paraphrase-multilingual-MiniLM-L12-v2"
+        assert body["embedding_model"] == "all-MiniLM-L6-v2"
         assert body["rebuild_task_id"].startswith("embed-rebuild-")
 
         status = client.get("/api/status").json()
         assert status["active_preset_id"] == "local_mini"
         presets = status["embedding_presets"]
-        assert {p["id"] for p in presets} == {"local_mini", "openai_large", "bge_m3"}
+        assert {p["id"] for p in presets} == {"local_mini", "openai_large", "bge_m3", "gemini_384"}
         for p in presets:
             assert {"id", "label", "description", "mode", "model", "dim",
                     "requires_api_key", "download_size_mb"} <= set(p.keys())

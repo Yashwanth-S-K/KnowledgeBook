@@ -177,11 +177,14 @@ DEFAULT_BACKEND = os.getenv("DEFAULT_BACKEND", "openai")
 # to OpenAI). Falls back to the main OPENAI_* settings.
 EMBEDDING_API_KEY = os.getenv("EMBEDDING_API_KEY", "") or OPENAI_API_KEY
 EMBEDDING_API_BASE_URL = os.getenv("EMBEDDING_API_BASE_URL", "") or OPENAI_BASE_URL
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+EMBEDDING_GEMINI_API_KEY = os.getenv("EMBEDDING_GEMINI_API_KEY", "") or GEMINI_API_KEY
 
 # ── Embedding ────────────────────────────────────────────────────────
 # - "local" → sentence-transformers (offline, downloads model on first
 #   use). Default multilingual MiniLM handles 50+ languages incl. CJK.
-# - "api"   → OpenAI-compatible /v1/embeddings endpoint.
+# - "api"    → OpenAI-compatible /v1/embeddings endpoint.
+# - "gemini" → Google Gemini Embeddings API.
 #
 # Three user-selectable presets are surfaced in the Settings UI. The active
 # preset writes its (mode, model) pair into a small JSON preference file
@@ -217,6 +220,15 @@ EMBEDDING_PRESETS: dict[str, dict] = {
         "dim": 1024,
         "requires_api_key": False,
         "download_size_mb": 2200,
+    },
+    "gemini_384": {
+        "label": "Gemini Embedding",
+        "description": "Google Gemini Embeddings API · text-embedding-004 · Matryoshka 384d",
+        "mode": "gemini",
+        "model": "text-embedding-004",
+        "dim": 384,
+        "requires_api_key": True,
+        "download_size_mb": 0,
     },
 }
 
@@ -286,7 +298,7 @@ else:
     EMBEDDING_MODE = _env_embedding_mode
     EMBEDDING_MODEL = _env_embedding_model or (
         "text-embedding-3-small" if EMBEDDING_MODE == "api"
-        else "all-MiniLM-L6-v2"
+        else ("text-embedding-004" if EMBEDDING_MODE == "gemini" else "all-MiniLM-L6-v2")
     )
 
 # ── Chunking defaults ────────────────────────────────────────────────

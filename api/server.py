@@ -4497,11 +4497,20 @@ async def switch_embedding_preset(req: EmbeddingSwitchRequest):
     if req.preset_id not in config.EMBEDDING_PRESETS:
         raise HTTPException(400, f"unknown preset: {req.preset_id!r}")
     preset = config.EMBEDDING_PRESETS[req.preset_id]
-    if preset["requires_api_key"] and not config.EMBEDDING_API_KEY:
+    key_configured = (
+        config.EMBEDDING_GEMINI_API_KEY
+        if preset["mode"] == "gemini"
+        else config.EMBEDDING_API_KEY
+    )
+    if preset["requires_api_key"] and not key_configured:
+        key_name = (
+            "EMBEDDING_GEMINI_API_KEY (or GEMINI_API_KEY)"
+            if preset["mode"] == "gemini"
+            else "EMBEDDING_API_KEY (or OPENAI_API_KEY)"
+        )
         raise HTTPException(
             400,
-            f"preset {req.preset_id!r} requires EMBEDDING_API_KEY "
-            f"(or OPENAI_API_KEY as fallback). Set it in .env first.",
+            f"preset {req.preset_id!r} requires {key_name}. Set it in .env first.",
         )
 
     # H1: serialise the entire switch — preference write, kb reset, rebuild
@@ -4885,6 +4894,7 @@ async def status_endpoint():
         "embedding_presets": _embedding_presets_payload(),
         "active_preset_id": config.active_preset_id(),
         "embedding_api_configured": bool(config.EMBEDDING_API_KEY),
+        "embedding_gemini_configured": bool(config.EMBEDDING_GEMINI_API_KEY),
         "embedding_rebuild": _embedding_rebuild_view(),
         "tectonic_available": bool(getattr(app.state, "tectonic_available", False)),
         "pptx_pdf_available": bool(getattr(app.state, "pptx_pdf_available", False)),
