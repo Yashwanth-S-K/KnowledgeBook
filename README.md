@@ -66,7 +66,7 @@ Open `.env` and set **at least one** of the following:
 # Google Gemini (recommended — same key works for chat + embeddings)
 OPENAI_API_KEY=your-gemini-api-key
 OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-OPENAI_MODEL=gemini-2.0-flash
+OPENAI_MODEL=gemini-3.6-flash
 
 # OpenAI
 # OPENAI_API_KEY=sk-...
