@@ -134,64 +134,7 @@ KnowledgeBook supports three switchable embedding backends. Switch between them 
 
 > **Free-tier quota note**: The Gemini Embedding free tier allows ~1,500 requests/day. For large document collections (500+ chunks), you may hit the daily limit. Either wait for quota reset, or use the **Local MiniLM** preset which has no limits.
 
----
 
-## Troubleshooting
-
-### "Please provide documents" / "No course materials loaded"
-
-The vector index hasn't been built yet for your active embedding preset. This happens when:
-- You just uploaded files but embedding is still in progress (check the progress bar)
-- You switched embedding presets and the new index hasn't been built
-
-**Fix**: Go to **Settings → Embedding Preset**, select your preset, and click **Apply** to trigger a rebuild.
-
-### `ModuleNotFoundError: No module named 'sentence_transformers'`
-
-```bash
-pip install sentence-transformers
-# If you see transformers version errors afterwards:
-pip install transformers==4.44.2 --force-reinstall
-```
-
-### `429 RESOURCE_EXHAUSTED` (Gemini Embedding)
-
-You've hit the free-tier daily quota. Options:
-1. Switch to **Local MiniLM** preset in Settings (no quota, works immediately)
-2. Wait ~24 hours for quota to reset
-3. Enable billing on your Google AI account for higher limits
-
-### `404 NOT_FOUND` for embedding model
-
-Ensure you're using `gemini-embedding-001` (not `text-embedding-004`). The config is pre-set correctly — this only appears if you manually override `EMBEDDING_MODEL` in `.env`.
-
-### `404 NOT_FOUND` or “AI Service Error” when using Gemini chat
-
-The chat model and the embedding model are separate settings. Local MiniLM only
-controls document retrieval; it cannot repair a Gemini chat-model error.
-
-Use the Gemini OpenAI-compatible endpoint with a model available to your key:
-
-```env
-OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-OPENAI_MODEL=gemini-3.5-flash
-GEMINI_REASONING_EFFORT=low
-```
-
-`gemini-2.5-flash` has been retired for new Gemini API users. If your preferred
-model is quota-limited, choose another model shown by the provider’s model list
-in **Settings → AI Backend & Models**, then use **Test** to verify it.
-
-If the error says “connection refused”, remove or correct `HTTP_PROXY`,
-`HTTPS_PROXY`, and `ALL_PROXY`: a stale local proxy can block calls to Gemini.
-
-### Server starts but chat returns 500
-
-Check the server console for the actual traceback. Common causes:
-- Missing API key for the configured LLM provider
-- `sentence_transformers` import error (see fix above)
-
----
 
 ## Architecture
 
