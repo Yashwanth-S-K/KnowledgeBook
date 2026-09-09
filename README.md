@@ -66,7 +66,10 @@ Open `.env` and set **at least one** of the following:
 # Google Gemini (recommended — same key works for chat + embeddings)
 OPENAI_API_KEY=your-gemini-api-key
 OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-OPENAI_MODEL=gemini-3.6-flash
+OPENAI_MODEL=gemini-3.5-flash
+# Gemini 3 models use reasoning by default. `low` keeps ordinary RAG
+# answers fast and preserves room for the final answer.
+GEMINI_REASONING_EFFORT=low
 
 # OpenAI
 # OPENAI_API_KEY=sk-...
@@ -161,6 +164,26 @@ You've hit the free-tier daily quota. Options:
 ### `404 NOT_FOUND` for embedding model
 
 Ensure you're using `gemini-embedding-001` (not `text-embedding-004`). The config is pre-set correctly — this only appears if you manually override `EMBEDDING_MODEL` in `.env`.
+
+### `404 NOT_FOUND` or “AI Service Error” when using Gemini chat
+
+The chat model and the embedding model are separate settings. Local MiniLM only
+controls document retrieval; it cannot repair a Gemini chat-model error.
+
+Use the Gemini OpenAI-compatible endpoint with a model available to your key:
+
+```env
+OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+OPENAI_MODEL=gemini-3.5-flash
+GEMINI_REASONING_EFFORT=low
+```
+
+`gemini-2.5-flash` has been retired for new Gemini API users. If your preferred
+model is quota-limited, choose another model shown by the provider’s model list
+in **Settings → AI Backend & Models**, then use **Test** to verify it.
+
+If the error says “connection refused”, remove or correct `HTTP_PROXY`,
+`HTTPS_PROXY`, and `ALL_PROXY`: a stale local proxy can block calls to Gemini.
 
 ### Server starts but chat returns 500
 

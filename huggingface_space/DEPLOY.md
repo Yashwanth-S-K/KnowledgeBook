@@ -36,7 +36,7 @@ anyone can visit and use as a live demo.
    | ----------------- | -------------------------------------------------------- |
    | `OPENAI_API_KEY`  | `sk-...`                                                 |
    | `OPENAI_BASE_URL` | `https://api.openai.com/v1` (or any compatible endpoint) |
-   | `OPENAI_MODEL`    | `gpt-4o-mini` / `deepseek-v4-pro` / `gemini-2.0-flash`   |
+   | `OPENAI_MODEL`    | `gpt-4o-mini` / `deepseek-v4-pro` / `gemini-3.5-flash`   |
 
    Without this, the first visitor sees an empty Settings page and has
    to paste their own key — fine for a demo you control, awkward for a

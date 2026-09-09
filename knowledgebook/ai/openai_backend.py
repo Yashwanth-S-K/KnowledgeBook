@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
 import re
 import threading
@@ -16,6 +17,8 @@ import openai
 from knowledgebook import config
 from knowledgebook.ai.base import LLMBackend, TruncationSignal
 from knowledgebook.types import LLMResponse
+
+logger = logging.getLogger(__name__)
 
 # 2026-05-13: raised 4 → 24. This is a module-wide thread pool used by
 # every codex sync call: complete_codex_sync, complete_chat_sync,
@@ -65,6 +68,32 @@ _DEFAULT_HTTP_TIMEOUT = float(os.getenv("OPENAI_HTTP_TIMEOUT_SECONDS", "600"))
 _REASONING_EFFORT = os.getenv("OPENAI_REASONING_EFFORT", "medium").strip().lower()
 _REASONING_EFFORT_VALID = _REASONING_EFFORT in {"low", "medium", "high"}
 
+# Gemini 3 models reserve output capacity for internal reasoning unless a
+# reasoning level is selected explicitly. Use the inexpensive setting for
+# normal RAG answers so short answers do not get truncated by hidden thought.
+_GEMINI_REASONING_EFFORT = os.getenv("GEMINI_REASONING_EFFORT", "low").strip().lower()
+_GEMINI_REASONING_EFFORT_VALID = _GEMINI_REASONING_EFFORT in {"minimal", "low", "medium", "high"}
+
+
+def _call_with_retry(fn, *args, max_retries: int = 5, **kwargs):
+    delay = 2.0
+    for attempt in range(max_retries):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as exc:
+            err_str = str(exc)
+            if attempt < max_retries - 1 and ("429" in err_str or "RateLimit" in type(exc).__name__ or "RESOURCE_EXHAUSTED" in err_str or "503" in err_str):
+                match = re.search(r"retry in (\d+)", err_str, re.IGNORECASE)
+                wait_sec = float(match.group(1)) + 1.0 if match else delay
+                logger.warning(
+                    "OpenAIBackend API rate-limited (attempt %d/%d), retrying in %.1fs...",
+                    attempt + 1, max_retries, wait_sec,
+                )
+                time.sleep(wait_sec)
+                delay = min(delay * 2.0, 30.0)
+            else:
+                raise
+
 
 class OpenAIBackend(LLMBackend):
     name = "openai"
@@ -84,6 +113,7 @@ class OpenAIBackend(LLMBackend):
         # 通用 chat / rewrite / summary 类不需要 reasoning，关掉省时间。
         # 真要 thinking 可以在调用端 task_type 路由到别的 backend。
         self._is_deepseek = "deepseek" in self.base_url.lower()
+        self._is_gemini = "generativelanguage.googleapis.com" in self.base_url.lower()
         # Use sync client for codex compatibility. Configure httpx timeout so a
         # stalled upstream actually aborts — `asyncio.wait_for` alone can't
         # cancel a sync call running in a thread executor (the executor thread
@@ -182,7 +212,10 @@ class OpenAIBackend(LLMBackend):
         }
         if self._is_deepseek:
             kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
-        resp = self.client.chat.completions.create(**kwargs)
+        if self._is_gemini and _GEMINI_REASONING_EFFORT_VALID:
+            kwargs["reasoning_effort"] = _GEMINI_REASONING_EFFORT
+
+        resp = _call_with_retry(self.client.chat.completions.create, **kwargs)
         choice = resp.choices[0]
         usage = resp.usage
         return LLMResponse(
@@ -313,7 +346,9 @@ class OpenAIBackend(LLMBackend):
                     }
                     if self._is_deepseek:
                         stream_kwargs["extra_body"] = {"thinking": {"type": "disabled"}}
-                    stream = self.client.chat.completions.create(**stream_kwargs)
+                    if self._is_gemini and _GEMINI_REASONING_EFFORT_VALID:
+                        stream_kwargs["reasoning_effort"] = _GEMINI_REASONING_EFFORT
+                    stream = _call_with_retry(self.client.chat.completions.create, **stream_kwargs)
                     active_stream["obj"] = stream
                     for event in stream:
                         if cancel_event.is_set():
