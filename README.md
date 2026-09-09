@@ -187,7 +187,7 @@ Two documents independently report the same fact (e.g., automated sorting center
 Differing numerical values for the same entity+attribute+period (e.g., FY22 CapEx: ₹240 Cr vs ₹285 Cr). The cross-document reconciliation engine flags this as a **Genuine Contradiction**.
 
 ### 3. ⚠️ Apparent Contradiction Explained by Context
-Revenue ₹4,800 Cr vs ₹6,880 Cr — resolved by extracting temporal metadata. Document A = FY21, Document B = FY22. System responds: *"Both figures are accurate within their respective reporting periods."*
+For Eg. Revenue ₹4,800 Cr vs ₹6,880 Cr — resolved by extracting temporal metadata. Document A = FY21, Document B = FY22. System responds: *"Both figures are accurate within their respective reporting periods."*
 
 ### 4. 🔄 Extraction Failure & Graceful Fallback
 When formula/table parsing fails or retrieval confidence is low (< 0.15), the system falls back to BM25 + raw text chunking and annotates responses with `(Low retrieval confidence)`.
